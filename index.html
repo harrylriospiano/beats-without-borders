@@ -479,6 +479,32 @@
     margin-top:12px;
     text-align:center;
   }
+  .fs-message{
+    display:none;
+    font-size:14px;
+    font-weight:600;
+    padding:12px 16px;
+    border-radius:6px;
+    margin-bottom:16px;
+    text-align:center;
+  }
+  .fs-message.is-visible{display:block;}
+  .fs-success{
+    background:#e9f5ec;
+    color:#256b3a;
+    border:1px solid #9fd6b0;
+  }
+  .fs-error{
+    background:#fbeaea;
+    color:#a13636;
+    border:1px solid #eab5b5;
+  }
+  .fs-field-error{
+    display:block;
+    font-size:12px;
+    color:#c0392b;
+    margin-top:2px;
+  }
 
   /* ---------- FOOTER ---------- */
   footer{
@@ -664,41 +690,43 @@
         <p>Whether you&rsquo;re thinking about a single assembly, a multi-school day, or a full residency, we&rsquo;ll help you figure out what fits your calendar and budget.</p>
         <p>Prefer to reach out directly instead of the form? We&rsquo;re happy to hop on a short call.</p>
         <div class="contact-direct">
-          <a href="mailto:booking@harrylrios.com">booking@harrylrios.com</a><br><br>
+          <a href="mailto:harrylrios@gmail.com">harrylrios@gmail.com</a><br><br>
           <a href="https://harrylrios.com" target="_blank" rel="noopener">HarryLRios.com</a>
         </div>
       </div>
-      <form class="request-form" id="requestForm">
+      <form class="request-form" id="requestForm" action="https://formspree.io/f/mqpzddzv" method="POST">
+        <div class="fs-message fs-success" id="formSuccess">Thanks &mdash; your request is in. We&rsquo;ll follow up at the email you provided within 1&ndash;2 business days.</div>
+        <div class="fs-message fs-error" id="formError">Something went wrong sending your request. Please try again, or email us directly at <a href="mailto:harrylrios@gmail.com">harrylrios@gmail.com</a>.</div>
         <div class="form-row">
           <div class="field">
             <label for="name">Your Name</label>
-            <input type="text" id="name" required>
+            <input type="text" id="name" name="name" required>
           </div>
           <div class="field">
             <label for="role">Role / Title</label>
-            <input type="text" id="role" placeholder="e.g. Fine Arts Coordinator">
+            <input type="text" id="role" name="role" placeholder="e.g. Fine Arts Coordinator">
           </div>
         </div>
         <div class="form-row">
           <div class="field">
             <label for="org">School / District</label>
-            <input type="text" id="org" required>
+            <input type="text" id="org" name="org" required>
           </div>
           <div class="field">
             <label for="email">Email</label>
-            <input type="email" id="email" required>
+            <input type="email" id="email" name="email" required>
           </div>
         </div>
         <div class="field">
           <label for="dates">Preferred Dates or Semester</label>
-          <input type="text" id="dates" placeholder="e.g. Spring 2027, or flexible">
+          <input type="text" id="dates" name="dates" placeholder="e.g. Spring 2027, or flexible">
         </div>
         <div class="field">
           <label for="message">Message</label>
-          <textarea id="message" rows="4" placeholder="Number of schools, grade levels, anything else useful to know."></textarea>
+          <textarea id="message" name="message" rows="4" placeholder="Number of schools, grade levels, anything else useful to know."></textarea>
         </div>
-        <button type="submit" class="btn btn-gold">Send Availability Request</button>
-        <p class="form-note">This opens a pre-filled email in your email app &mdash; nothing is submitted automatically.</p>
+        <button type="submit" class="btn btn-gold" id="formSubmitBtn">Send Availability Request</button>
+        <p class="form-note">Submitted directly &mdash; we typically respond within 1&ndash;2 business days.</p>
       </form>
     </div>
   </div>
@@ -711,26 +739,36 @@
 </footer>
 
 <script>
-  document.getElementById('requestForm').addEventListener('submit', function(e){
+  var requestForm = document.getElementById('requestForm');
+  var formSuccess = document.getElementById('formSuccess');
+  var formError = document.getElementById('formError');
+  var formSubmitBtn = document.getElementById('formSubmitBtn');
+
+  requestForm.addEventListener('submit', function (e) {
     e.preventDefault();
-    var name = document.getElementById('name').value;
-    var role = document.getElementById('role').value;
-    var org = document.getElementById('org').value;
-    var email = document.getElementById('email').value;
-    var dates = document.getElementById('dates').value;
-    var message = document.getElementById('message').value;
+    formSuccess.classList.remove('is-visible');
+    formError.classList.remove('is-visible');
+    formSubmitBtn.disabled = true;
+    formSubmitBtn.textContent = 'Sending…';
 
-    var subject = 'Beats Without Borders — Availability Request from ' + org;
-    var body =
-      'Name: ' + name + '\n' +
-      'Role: ' + role + '\n' +
-      'School/District: ' + org + '\n' +
-      'Email: ' + email + '\n' +
-      'Preferred Dates: ' + dates + '\n\n' +
-      'Message:\n' + message;
-
-    var mailto = 'mailto:booking@harrylrios.com?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
-    window.location.href = mailto;
+    fetch(requestForm.action, {
+      method: 'POST',
+      body: new FormData(requestForm),
+      headers: { 'Accept': 'application/json' }
+    }).then(function (response) {
+      formSubmitBtn.disabled = false;
+      formSubmitBtn.textContent = 'Send Availability Request';
+      if (response.ok) {
+        requestForm.reset();
+        formSuccess.classList.add('is-visible');
+      } else {
+        formError.classList.add('is-visible');
+      }
+    }).catch(function () {
+      formSubmitBtn.disabled = false;
+      formSubmitBtn.textContent = 'Send Availability Request';
+      formError.classList.add('is-visible');
+    });
   });
 </script>
 
